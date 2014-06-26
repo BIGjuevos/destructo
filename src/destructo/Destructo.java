@@ -29,7 +29,6 @@ package destructo;
  * @author ryan
  */
 public class Destructo {
-
     /**
      * @param args the command line arguments
      */

@@ -22,13 +22,12 @@
  * THE SOFTWARE.
  */
 
-package destructo;
+package destructo.message.engine;
 
 /**
- * This is the class that connects to the bossy server
- * 
+ *
  * @author ryan
  */
-public class Server {
+public class Start {
     
 }

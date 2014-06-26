@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package destructo;
+package destructo.message;
 
 /**
  *
