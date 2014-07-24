@@ -29,5 +29,5 @@ package destructo.message;
  * @author ryan
  */
 public class ServerMessage {
-    
+    protected String message;
 }
