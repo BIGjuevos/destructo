@@ -28,6 +28,40 @@ package destructo;
  *
  * @author ryan
  */
-public class Copter {
+public class Copter implements Runnable {
+    //engines
+    private Engine frontLeft;
+    private Engine frontRight;
+    private Engine backLeft;
+    private Engine backRight;
     
+    //command and control
+    private Server server;
+    
+    /**
+     * constructor that sets us up
+     * @param s the server we need to talk to
+     */
+    public Copter(Server s) {
+        //set the server
+        this.server = s;
+        
+        //initialize the engines
+        this.frontLeft =  new Engine( 4, 0, 0.005, 0.06, 0.111, 0.19, 0, 500000, 1000000, 2000000);
+        this.frontLeft.setServer(this.server);
+        
+        this.frontRight = new Engine(17, 0, 0.005, 0.06, 0.111, 0.19, 0, 500000, 1000000, 2000000);
+        this.frontRight.setServer(this.server);
+        
+        this.backLeft =   new Engine(18, 0, 0.005, 0.06, 0.111, 0.19, 0, 500000, 1000000, 2000000);
+        this.backLeft.setServer(this.server);
+        
+        this.backRight =  new Engine(22, 0, 0.005, 0.06, 0.111, 0.19, 0, 500000, 1000000, 2000000);
+        this.backRight.setServer(this.server);
+    }
+    
+    @Override
+    public void run() {
+        
+    }
 }
