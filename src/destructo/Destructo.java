@@ -6,6 +6,9 @@
 
 package destructo;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author ryan
@@ -23,7 +26,7 @@ public class Destructo {
             
             System.exit(1);
         } else {
-            System.out.println("We'll be connecting to the server " + args[0]);
+            System.out.println("DESTRU We'll be connecting to the server " + args[0]);
         }
         
         //initialize our server
@@ -39,5 +42,12 @@ public class Destructo {
         
         //start the copter thread
         threadCopter.start();
+        try {
+            //wait for everything to finish
+            threadServer.join();
+            threadCopter.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Destructo.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }

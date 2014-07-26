@@ -9,6 +9,8 @@ package destructo;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Collections;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class is responsible for managing the information delivered to bossy about the engines
@@ -19,6 +21,7 @@ import java.util.Collections;
  */
 public class Engine implements Runnable {
     //engine speed information
+    private int id;
     private int gpio;
     private double throttleOff;
     private double throttleLow;
@@ -26,6 +29,7 @@ public class Engine implements Runnable {
     private double throttleMin;
     private double throttleMax;
     private double throttleTrim;
+    private int throttle = 0; //0-100
     
     //engine timer information
     private int timerStart;
@@ -35,10 +39,14 @@ public class Engine implements Runnable {
     //command and control information
     private List<Command> commandQueue;
     private Server server;
+    
+    //thread control
+    private boolean keepRunning = true;
 
     /**
      * set all of the pertinent information
      * 
+     * @param i id of the engine 0...3
      * @param g gpio id on pi-blaster
      * @param off off speed
      * @param low low speed
@@ -50,8 +58,9 @@ public class Engine implements Runnable {
      * @param preArm timer that occurs from engine low to engine arm
      * @param postArm timer that occurs from engine arm to engine min
      */
-    public Engine(int g, double off, double low, double arm, double min, double max, double trim, int start, int preArm, int postArm) {
+    public Engine(int i, int g, double off, double low, double arm, double min, double max, double trim, int start, int preArm, int postArm) {
         //set all of the engine properties
+        this.id = i;
         this.gpio = g;
         this.throttleOff = off;
         this.throttleLow = low;
@@ -77,12 +86,29 @@ public class Engine implements Runnable {
         this.server = s;
     }
     
+    public void start() {
+        
+    }
+    
     @Override
     public void run() {
         /**
          * enter a loop that is responsible for:
-         *   reading from the commandQueue and executing as fast as possbile
+         *   reading from the commandQueue and executing as fast as possible
          *   relaying information to the server message queue
          */
+        
+        Command cmd;
+        while (this.keepRunning) {
+            try {
+                cmd = new Command();
+                cmd.engine(this.id, this.throttle);
+                
+                this.server.queue(cmd);
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Engine.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
 }
