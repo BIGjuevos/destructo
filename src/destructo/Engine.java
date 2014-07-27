@@ -6,9 +6,17 @@
 
 package destructo;
 
+import java.awt.Toolkit;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Collections;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,6 +50,9 @@ public class Engine implements Runnable {
     
     //thread control
     private boolean keepRunning = true;
+    
+    //engine control information
+    private RandomAccessFile file;
 
     /**
      * set all of the pertinent information
@@ -86,15 +97,92 @@ public class Engine implements Runnable {
         this.server = s;
     }
     
+    /**
+     * get the low throttle setting
+     * @return double
+     */
+    public double getThrottleLow() {
+        return this.throttleLow;
+    }
+    
+    /**
+     * get the arm throttle setting
+     * @return double
+     */
+    public double getThrottleArm() {
+        return this.throttleArm;
+    }
+    
+    /**
+     * get the min throttle setting
+     * @return double
+     */
+    public double getThrottleMin() {
+        return this.throttleMin;
+    }
+    
+    /**
+     * start the engines
+     */
     public void start() {
+        System.out.println("Starting engine " + this.id);
+        Toolkit toolkit = Toolkit.getDefaultToolkit();
         
+        //do the start timer (low)
+        Timer lowTimer = new Timer();
+        StartLowTask slt = new StartLowTask();
+        slt.setEngine(this);
+        lowTimer.schedule(slt, this.timerStart);
+        
+        //do the pre arm timer (arm)
+        Timer armTimer = new Timer();
+        StartArmTask sat = new StartArmTask();
+        sat.setEngine(this);
+        armTimer.schedule(sat, this.timerStart + this.timerPreArm);
+        
+        //do the post arm timer (min)
+        Timer minTimer = new Timer();
+        StartMinTask smt = new StartMinTask();
+        smt.setEngine(this);
+        minTimer.schedule(smt, this.timerStart + this.timerPreArm + this.timerPostArm);
+    }
+    
+    /**
+     * idle the engines
+     */
+    public void idle() {
+        System.out.println("Idling engine " + this.id);
+        this.write(this.throttleMin);
+    }
+    
+    /**
+     * stop the engines
+     */
+    public void stop() {
+        System.out.println("Stopping engine " + this.id);
+        this.write(this.throttleOff);
+    }
+    
+    /**
+     * send to pi-blaster
+     */
+    private void write(double speed) {
+        String content = this.gpio + "=" + speed;
+        
+        try {
+            this.file = new RandomAccessFile("/dev/pi-blaster", "rw");
+            this.file.seek(0);
+            this.file.write(content.getBytes());
+            this.file.close();
+        } catch (IOException ex) {
+            System.exit(201);
+        }
     }
     
     @Override
     public void run() {
         /**
          * enter a loop that is responsible for:
-         *   reading from the commandQueue and executing as fast as possible
          *   relaying information to the server message queue
          */
         
@@ -109,6 +197,48 @@ public class Engine implements Runnable {
             } catch (InterruptedException ex) {
                 Logger.getLogger(Engine.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+    }
+    
+    /**
+     * Utility internal classes
+     */
+    class StartLowTask extends TimerTask {
+        private Engine engine;
+        
+        @Override
+        public void run() {
+            engine.write(engine.getThrottleLow());
+        }
+        
+        public void setEngine(Engine e) {
+            this.engine = e;
+        }
+    }
+    
+    class StartArmTask extends TimerTask {
+        private Engine engine;
+        
+        @Override
+        public void run() {
+            engine.write(engine.getThrottleArm());
+        }
+        
+        public void setEngine(Engine e) {
+            this.engine = e;
+        }
+    }
+    
+    class StartMinTask extends TimerTask {
+        private Engine engine;
+        
+        @Override
+        public void run() {
+            engine.write(engine.getThrottleMin());
+        }
+        
+        public void setEngine(Engine e) {
+            this.engine = e;
         }
     }
 }

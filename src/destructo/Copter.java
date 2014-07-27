@@ -46,16 +46,16 @@ public class Copter implements Runnable {
         this.server = s;
         
         //initialize the engines
-        this.frontLeft =  new Engine(0,  4, 0, 0.005, 0.06, 0.111, 0.19, 0, 500000, 1000000, 2000000);
+        this.frontLeft =  new Engine(0,  4, 0, 0.005, 0.06, 0.111, 0.19, 0, 500, 1000, 2000);
         this.frontLeft.setServer(this.server);
         
-        this.frontRight = new Engine(1, 17, 0, 0.005, 0.06, 0.111, 0.19, 0, 500000, 1000000, 2000000);
+        this.frontRight = new Engine(1, 17, 0, 0.005, 0.06, 0.111, 0.19, 0, 500, 1000, 2000);
         this.frontRight.setServer(this.server);
         
-        this.backLeft =   new Engine(2, 18, 0, 0.005, 0.06, 0.111, 0.19, 0, 500000, 1000000, 2000000);
+        this.backLeft =   new Engine(2, 18, 0, 0.005, 0.06, 0.111, 0.19, 0, 500, 1000, 2000);
         this.backLeft.setServer(this.server);
         
-        this.backRight =  new Engine(3, 22, 0, 0.005, 0.06, 0.111, 0.19, 0, 500000, 1000000, 2000000);
+        this.backRight =  new Engine(3, 22, 0, 0.005, 0.06, 0.111, 0.19, 0, 500, 1000, 2000);
         this.backRight.setServer(this.server);
     }
     
@@ -79,27 +79,50 @@ public class Copter implements Runnable {
                 String sentence = new String( recvPacket.getData() );
                 sentence = sentence.trim();
                 
-                System.out.println("Got message from server " + sentence);
-                
-                if ( sentence.substring(0,2).equals("E S") ) {
-                    //we need to start an engine
-                    String[] parts = sentence.split(" ");
-                    
-                    int engineId = Integer.parseInt(parts[2]);
-                    switch (engineId) {
-                        case 0:
-                            this.frontLeft.start();
-                            break;
-                        case 1:
-                            this.frontRight.start();
-                            break;
-                        case 2:
-                            this.backLeft.start();
-                            break;
-                        case 3:
-                            this.backRight.start();
-                            break;
-                    }
+                System.out.println("Got message from server '" + sentence + "'");
+                String[] parts;
+                int engineId;
+                switch (sentence.substring(0, 3)) {
+                    case "E S":
+                        //we need to start an engine
+                        parts = sentence.split(" ");
+                        
+                        engineId = Integer.parseInt(parts[2]);
+                        switch (engineId) {
+                            case 0:
+                                this.frontLeft.start();
+                                break;
+                            case 1:
+                                this.frontRight.start();
+                                break;
+                            case 2:
+                                this.backLeft.start();
+                                break;
+                            case 3:
+                                this.backRight.start();
+                                break;
+                        }
+                        break;
+                    case "E X":
+                        //we need to start an engine
+                        parts = sentence.split(" ");
+                        
+                        engineId = Integer.parseInt(parts[2]);
+                        switch (engineId) {
+                            case 0:
+                                this.frontLeft.stop();
+                                break;
+                            case 1:
+                                this.frontRight.stop();
+                                break;
+                            case 2:
+                                this.backLeft.stop();
+                                break;
+                            case 3:
+                                this.backRight.stop();
+                                break;
+                        }
+                        break;
                 }
             } catch (IOException ex) {
                 System.exit(101);
