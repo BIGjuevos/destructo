@@ -9,6 +9,7 @@ package destructo;
 import java.awt.Toolkit;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -52,7 +53,7 @@ public class Engine implements Runnable {
     private boolean keepRunning = true;
     
     //engine control information
-    private RandomAccessFile file;
+    private File file;
 
     /**
      * set all of the pertinent information
@@ -167,14 +168,19 @@ public class Engine implements Runnable {
      * send to pi-blaster
      */
     private void write(double speed) {
-        String content = this.gpio + "=" + speed;
+        String content = this.gpio + "=" + speed + "\n";
+        System.out.println("WRITE: " + content);
         
         try {
-            this.file = new RandomAccessFile("/dev/pi-blaster", "rw");
-            this.file.seek(0);
-            this.file.write(content.getBytes());
-            this.file.close();
+            FileOutputStream fop = null;
+            this.file = new File("/dev/pi-blaster");
+            fop = new FileOutputStream(file);
+            
+            fop.write(content.getBytes());
+            fop.flush();
+            fop.close();
         } catch (IOException ex) {
+            ex.printStackTrace();
             System.exit(201);
         }
     }
@@ -235,6 +241,7 @@ public class Engine implements Runnable {
         @Override
         public void run() {
             engine.write(engine.getThrottleMin());
+            System.out.println("Startup procedures done for " + this.engine.id);
         }
         
         public void setEngine(Engine e) {

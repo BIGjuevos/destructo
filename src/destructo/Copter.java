@@ -46,16 +46,16 @@ public class Copter implements Runnable {
         this.server = s;
         
         //initialize the engines
-        this.frontLeft =  new Engine(0,  4, 0, 0.005, 0.06, 0.111, 0.19, 0, 500, 1000, 2000);
+        this.frontLeft =  new Engine(0,  4, 0, 0.005, 0.06, 0.115, 0.19, 0, 500, 3000, 5000);
         this.frontLeft.setServer(this.server);
         
-        this.frontRight = new Engine(1, 17, 0, 0.005, 0.06, 0.111, 0.19, 0, 500, 1000, 2000);
+        this.frontRight = new Engine(1, 17, 0, 0.005, 0.06, 0.115, 0.19, 0, 500, 3000, 5000);
         this.frontRight.setServer(this.server);
         
-        this.backLeft =   new Engine(2, 18, 0, 0.005, 0.06, 0.111, 0.19, 0, 500, 1000, 2000);
+        this.backLeft =   new Engine(2, 18, 0, 0.005, 0.06, 0.115, 0.19, 0, 500, 3000, 5000);
         this.backLeft.setServer(this.server);
         
-        this.backRight =  new Engine(3, 22, 0, 0.005, 0.06, 0.111, 0.19, 0, 500, 1000, 2000);
+        this.backRight =  new Engine(3, 22, 0, 0.005, 0.06, 0.115, 0.19, 0, 500, 3000, 5000);
         this.backRight.setServer(this.server);
     }
     
