@@ -121,12 +121,36 @@ public class Engine implements Runnable {
     public double getThrottleMin() {
         return this.throttleMin;
     }
+
+    public int getThrottle() {
+        return throttle;
+    }
+
+    public void setThrottle(int throttle) {
+        this.throttle = throttle;
+        System.out.println("ENGINE " + this.id + " THR: " + throttle);
+        
+        double newThrottle = this.throttleMin + 
+                (
+                    (this.throttleMax - this.throttleMin) * 
+                    ( (double)throttle / 100.0)
+                );
+        
+        //write the new throttle out the the gpio
+        this.write(
+                (double)Math.round(newThrottle * 100000) / 100000
+        );
+    }
     
     /**
      * start the engines
      */
     public void start() {
-        System.out.println("Starting engine " + this.id);
+        System.out.println("ENGINE "  + this.id + " Starting");
+        
+        //bypass the setter so we don't auto write
+        this.throttle = 0;
+        
         Toolkit toolkit = Toolkit.getDefaultToolkit();
         
         //do the start timer (low)
@@ -152,16 +176,21 @@ public class Engine implements Runnable {
      * idle the engines
      */
     public void idle() {
-        System.out.println("Idling engine " + this.id);
+        System.out.println("ENGINE " + this.id + " Idling");
         this.write(this.throttleMin);
+        
+        this.throttle = 0;
     }
     
     /**
      * stop the engines
      */
     public void stop() {
-        System.out.println("Stopping engine " + this.id);
+        System.out.println("ENGINE " + this.id + " Stopping");
         this.write(this.throttleOff);
+        
+        //bypass the setThrottle method
+        this.throttle = -1;
     }
     
     /**
@@ -169,7 +198,7 @@ public class Engine implements Runnable {
      */
     private void write(double speed) {
         String content = this.gpio + "=" + speed + "\n";
-        System.out.println("WRITE: " + content);
+        System.out.print("ENGINE " + this.id + " WRITE: " + content);
         
         try {
             FileOutputStream fop = null;
@@ -241,7 +270,7 @@ public class Engine implements Runnable {
         @Override
         public void run() {
             engine.write(engine.getThrottleMin());
-            System.out.println("Startup procedures done for " + this.engine.id);
+            System.out.println("ENGINE " + this.engine.id + " Startup procedures done for " + this.engine.id);
         }
         
         public void setEngine(Engine e) {

@@ -79,10 +79,36 @@ public class Copter implements Runnable {
                 String sentence = new String( recvPacket.getData() );
                 sentence = sentence.trim();
                 
-                System.out.println("Got message from server '" + sentence + "'");
+                System.out.println("COPTER Got message from server '" + sentence + "'");
                 String[] parts;
-                int engineId;
+                int engineId, throttle;
                 switch (sentence.substring(0, 3)) {
+                    case "E T":
+                        //set a custom throttle amount
+                        parts = sentence.split(" ");
+                        
+                        engineId = Integer.parseInt(parts[2]);
+                        throttle = Integer.parseInt(parts[3]);
+                        
+                        //refuse an out of bounds throttle
+                        if ( throttle > 100 || throttle <= 0 ) {
+                            break;
+                        }
+                        switch (engineId) {
+                            case 0:
+                                this.frontLeft.setThrottle(throttle);
+                                break;
+                            case 1:
+                                this.frontRight.setThrottle(throttle);
+                                break;
+                            case 2:
+                                this.backLeft.setThrottle(throttle);
+                                break;
+                            case 3:
+                                this.backRight.setThrottle(throttle);
+                                break;
+                        }
+                        break;
                     case "E S":
                         //we need to start an engine
                         parts = sentence.split(" ");
@@ -104,7 +130,7 @@ public class Copter implements Runnable {
                         }
                         break;
                     case "E X":
-                        //we need to start an engine
+                        //we need to stop an engine
                         parts = sentence.split(" ");
                         
                         engineId = Integer.parseInt(parts[2]);
