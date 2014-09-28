@@ -7,12 +7,9 @@
 package destructo;
 
 import java.awt.Toolkit;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Collections;
@@ -39,6 +36,7 @@ public class Engine implements Runnable {
     private double throttleMax;
     private double throttleTrim;
     private int throttle = 0; //0-100
+    private int trim = 0; //-100 to 100 (-10% to 10%)
     
     //engine timer information
     private int timerStart;
@@ -130,16 +128,31 @@ public class Engine implements Runnable {
         this.throttle = throttle;
         System.out.println("ENGINE " + this.id + " THR: " + throttle);
         
-        double newThrottle = this.throttleMin + 
+        double newThrottle = this.throttleMin + //this is where we start adding on top of
                 (
-                    (this.throttleMax - this.throttleMin) * 
-                    ( (double)throttle / 100.0)
+                    (this.throttleMax - this.throttleMin) *  //get our max range of power we can span
+                    ( (double)throttle / 100.0) + //get the throttle out of 100
+                    (
+                        (this.throttleMax - this.throttleMin) *
+                        ( (double)trim / 1000.0)
+                    ) //add in the trim as a a factor of the range of available throttle
                 );
         
         //write the new throttle out the the gpio
         this.write(
                 (double)Math.round(newThrottle * 100000) / 100000
         );
+    }
+    
+    public int getTrim() {
+        return trim;
+    }
+
+    public void setTrim(int trim) {
+        this.trim = trim;
+        
+        //we've updated the trim, force a new throttle to be outputted
+        this.setThrottle(this.throttle);
     }
     
     /**
@@ -225,9 +238,15 @@ public class Engine implements Runnable {
         while (this.keepRunning) {
             try {
                 cmd = new Command();
-                cmd.engine(this.id, this.throttle);
-                
+                //send them our current throttle
+                cmd.engineThrottle(this.id, this.throttle);
                 this.server.queue(cmd);
+                
+                cmd = new Command();
+                //send them our current trim
+                cmd.engineTrim(this.id, this.trim);
+                this.server.queue(cmd);
+                
                 Thread.sleep(50);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Engine.class.getName()).log(Level.SEVERE, null, ex);
@@ -277,4 +296,5 @@ public class Engine implements Runnable {
             this.engine = e;
         }
     }
+    
 }

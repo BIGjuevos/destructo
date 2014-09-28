@@ -12,7 +12,11 @@ package destructo;
  */
 public class Command {
     public static final int TYPE_HELLO = 0;
-    public static final int TYPE_INFO_ENGINE = 1;
+    
+    public static final int TYPE_INFO_ENGINE_THROTTLE = 100;
+    public static final int TYPE_INFO_ENGINE_TRIM = 101;
+    
+    public static final int TYPE_SENSOR_ACCEL_FORCES = 200;
     
     private String message;
     private int type;
@@ -23,10 +27,22 @@ public class Command {
         this.message = "hello " + name;
     }
     
-    public void engine(int id, int throttle) {
-        this.type = TYPE_INFO_ENGINE;
+    public void engineThrottle(int id, int throttle) {
+        this.type = TYPE_INFO_ENGINE_THROTTLE;
         
-        this.message = "E " + id + " " + throttle;
+        this.message = "E T " + id + " " + throttle;
+    }
+    
+    public void engineTrim(int id, int trim) {
+        this.type = TYPE_INFO_ENGINE_TRIM;
+        
+        this.message = "E R " + id + " " + trim;
+    }
+    
+    public void accelData(double X, double Y, double Z) {
+        this.type = TYPE_SENSOR_ACCEL_FORCES;
+        
+        this.message = "I A " + X + " " + Y + " " + Z;
     }
     
     public String getMessage() {

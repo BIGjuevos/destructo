@@ -73,7 +73,7 @@ public class Server implements Runnable {
         Command cmd;
         DatagramPacket sendPacket;
         
-        System.out.println("SERVER Server Ready, entering loop");
+        System.out.println("SERVER   Server Ready, entering loop");
         while ( true ) {
             if ( this.outboundQueue.size() > 0 ) {
                 try {
@@ -82,9 +82,13 @@ public class Server implements Runnable {
                     continue; //keep going around
                 }
                 
+                if ( cmd == null ) {
+                    continue;
+                }
+                
                 switch ( cmd.getType() ) {
                     case 0: //hello
-                        System.out.println("SERVER Sending message '" + cmd.getMessage() + "'");
+                        System.out.println("SERVER   Sending message '" + cmd.getMessage() + "'");
                         break; 
                 }
                 

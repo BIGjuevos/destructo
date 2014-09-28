@@ -79,10 +79,37 @@ public class Copter implements Runnable {
                 String sentence = new String( recvPacket.getData() );
                 sentence = sentence.trim();
                 
-                System.out.println("COPTER Got message from server '" + sentence + "'");
+                System.out.println("COPTER   Got message from server '" + sentence + "'");
                 String[] parts;
-                int engineId, throttle;
+                int engineId, throttle, trim;
                 switch (sentence.substring(0, 3)) {
+                    case "E R":
+                        //we recieved an order to update our trim
+                        parts = sentence.split(" ");
+                        
+                        engineId = Integer.parseInt(parts[2]);
+                        trim = Integer.parseInt(parts[3]);
+                        
+                        //refuse an out of bounds throttle
+                        if ( trim > 100 || trim < -100 ) {
+                            break;
+                        }
+                        switch (engineId) {
+                            case 0:
+                                this.frontLeft.setTrim(trim);
+                                break;
+                            case 1:
+                                this.frontRight.setTrim(trim);
+                                break;
+                            case 2:
+                                this.backLeft.setTrim(trim);
+                                break;
+                            case 3:
+                                this.backRight.setTrim(trim);
+                                break;
+                        }
+                        
+                        break;
                     case "E T":
                         //set a custom throttle amount
                         parts = sentence.split(" ");
@@ -91,7 +118,7 @@ public class Copter implements Runnable {
                         throttle = Integer.parseInt(parts[3]);
                         
                         //refuse an out of bounds throttle
-                        if ( throttle > 100 || throttle <= 0 ) {
+                        if ( throttle > 100 || throttle < 0 ) {
                             break;
                         }
                         switch (engineId) {
@@ -157,7 +184,7 @@ public class Copter implements Runnable {
     }
     
     private void startup() {
-        System.out.println("COPTER Going through start procedures");
+        System.out.println("COPTER   Going through start procedures");
         
         //say hello to the server
         Command cmd = new Command();
@@ -165,7 +192,7 @@ public class Copter implements Runnable {
         this.server.queue(cmd);
         
         //do other stuff, like wait for their reply
-        System.out.println("COPTER Waiting for server to say they heard us");
+        System.out.println("COPTER   Waiting for server to say they heard us");
         try {
             DatagramSocket socket = new DatagramSocket(31313);
             byte[] recvData = new byte[64];
@@ -177,7 +204,7 @@ public class Copter implements Runnable {
             
             //verify to see that the server heard us just finr
             if ( !sentence.contains("welcome destructo") ) {
-                System.out.println("COPTER Server replied improperly with: '" + sentence + "'");
+                System.out.println("COPTER   Server replied improperly with: '" + sentence + "'");
                 
                 System.exit(3);
             }
@@ -189,11 +216,11 @@ public class Copter implements Runnable {
             System.exit(2);
         }
         
-        System.out.println("COPTER Server acknowledged us");
+        System.out.println("COPTER   Server acknowledged us");
         //send off configuration
         
         //start the engine threads
-        System.out.println("COPTER starting engine threads");
+        System.out.println("COPTER   starting engine threads");
         this.threadFrontLeft = new Thread(this.frontLeft);
         this.threadFrontLeft.start();
         
@@ -206,6 +233,24 @@ public class Copter implements Runnable {
         this.threadBackRight = new Thread(this.backRight);
         this.threadBackRight.start();
         
-        System.out.println("COPTER engine threads started");
+        System.out.println("COPTER   engine threads started");
     }
+
+    public Engine getFrontLeft() {
+        return frontLeft;
+    }
+
+    public Engine getFrontRight() {
+        return frontRight;
+    }
+
+    public Engine getBackLeft() {
+        return backLeft;
+    }
+
+    public Engine getBackRight() {
+        return backRight;
+    }
+    
+    
 }
