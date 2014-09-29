@@ -40,6 +40,8 @@ public class Control implements Runnable {
     
     private Accelerometer accel;
     private Thread accelThread;
+    
+    private static int TRIM_SCALE = 7;
 
     Control(Copter c, Server s) throws IOException {
         this.copter = c;
@@ -62,39 +64,125 @@ public class Control implements Runnable {
             Logger.getLogger(Control.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        //set our initial target as our current reference frame
+        //set our initial target as our current reference frame averaged for the last couple seconds
+        double  ax = this.accel.getX(),
+                ay = this.accel.getY(),
+                az = this.accel.getZ();
+        
+        //calculate a running average
+        for ( int i = 0; i < 8; i++ ) {
+            ax -= ax / 10;
+            ax += this.accel.getX() / 10;
+            
+            ay -= ay / 10;
+            ay += this.accel.getY() / 10;
+            
+            az -= az / 10;
+            az += this.accel.getZ() / 10;
+            
+            //wait a bit before the next sample
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(Control.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        System.out.println("CONTRO   Axis Average Samples");
+        System.out.println("CONTRO   X: " + ax);
+        System.out.println("CONTRO   Y: " + ay);
+        System.out.println("CONTRO   Z: " + az);
+        
         this.target = new Target();
-        this.target.setX(this.accel.getX());
-        this.target.setY(this.accel.getY());
-        this.target.setZ(this.accel.getZ());
+        this.target.setX(ax);
+        this.target.setY(ay);
+        this.target.setZ(az);
         
         //slert that we are now running
         System.out.println("CONTRO   Running");
         
-        int diff = 0;
+        double diff;
         
         //let's enter a basic control estimate loop
         while (true) {
             try {
+                if ( !this.copter.isEnginesOn() ) {
+                    Thread.sleep(10);
+                    continue;
+                }
                 //z check
-                if ( ( diff = check(this.target.getZ(), this.accel.getZ() ) ) != 0 ) {
-                    
+                if ( ( diff = check(this.target.getZ(), this.accel.getZ() ) ) != 0.0 ) {
+                    //update all engine throttles
+                    this.copter.getFrontLeft().setTrim(
+                            (int) (this.copter.getFrontLeft().getTrim() + ( diff * TRIM_SCALE ) )
+                    );
+                    this.copter.getFrontRight().setTrim(
+                            (int) (this.copter.getFrontRight().getTrim() + ( diff * TRIM_SCALE ) )
+                    );
+                    this.copter.getBackLeft().setTrim(
+                            (int) (this.copter.getBackLeft().getTrim() + ( diff * TRIM_SCALE ) )
+                    );
+                    this.copter.getBackRight().setTrim(
+                            (int) (this.copter.getBackRight().getTrim() + ( diff * TRIM_SCALE ) )
+                    );
                 }
                 //x check
+                if ( ( diff = check(this.target.getX(), this.accel.getX() ) ) != 0.0 ) {
+                    if ( diff < 0 ) {
+                        this.copter.getFrontLeft().setTrim(
+                                (int) (this.copter.getFrontLeft().getTrim() - ( diff * TRIM_SCALE ) )
+                        );
+                        this.copter.getFrontRight().setTrim(
+                                (int) (this.copter.getFrontRight().getTrim() - ( diff * TRIM_SCALE ) )
+                        );
+                    } else {
+                        this.copter.getBackLeft().setTrim(
+                                (int) (this.copter.getBackLeft().getTrim() - ( diff * TRIM_SCALE ) )
+                        );
+                        this.copter.getBackRight().setTrim(
+                                (int) (this.copter.getBackRight().getTrim() - ( diff * TRIM_SCALE ) )
+                        );
+                    }
+                }
                 //y check
+                if ( ( diff = check(this.target.getY(), this.accel.getY() ) ) != 0.0 ) {
+                    if ( diff > 0 ) {
+                        this.copter.getFrontLeft().setTrim(
+                                (int) (this.copter.getFrontLeft().getTrim() - ( diff * TRIM_SCALE ) )
+                        );
+                        this.copter.getBackLeft().setTrim(
+                                (int) (this.copter.getBackLeft().getTrim() - ( diff * TRIM_SCALE ) )
+                        );
+                    } else {
+                        this.copter.getFrontRight().setTrim(
+                                (int) (this.copter.getFrontRight().getTrim() - ( diff * TRIM_SCALE ) )
+                        );
+                        this.copter.getBackRight().setTrim(
+                                (int) (this.copter.getBackRight().getTrim() - ( diff * TRIM_SCALE ) )
+                        );
+                    }
+                }
                 
                 //check often
-                Thread.sleep(10);
+                Thread.sleep(50);
             } catch (InterruptedException ex) {
                 Logger.getLogger(Control.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
     
-    public int check(double target, double current) {
+    public double check(double target, double current) {
         //we must take the accelerometer and convert it into thrust... this should be fun
         
+        double diff = current - target;
         
-        return 0;
+        //our max diff should be 1 on a mathematical level, let's correct based off of that.
+        diff = Math.min(diff / 3, 1);
+        
+        if ( Math.abs(diff) > 0.005 ) {
+            return -1 * diff;
+        } else {
+            return 0.0;
+        }
     }
 }

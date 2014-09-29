@@ -251,6 +251,11 @@ public class Copter implements Runnable {
     public Engine getBackRight() {
         return backRight;
     }
-    
-    
+
+    boolean isEnginesOn() {
+        return this.frontLeft.isRunning() &&
+                this.frontRight.isRunning() &&
+                this.backLeft.isRunning() &&
+                this.backRight.isRunning();
+    }
 }

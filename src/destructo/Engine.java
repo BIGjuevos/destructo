@@ -38,6 +38,8 @@ public class Engine implements Runnable {
     private int throttle = 0; //0-100
     private int trim = 0; //-100 to 100 (-10% to 10%)
     
+    private boolean running;
+    
     //engine timer information
     private int timerStart;
     private int timerPreArm;
@@ -126,7 +128,7 @@ public class Engine implements Runnable {
 
     public void setThrottle(int throttle) {
         this.throttle = throttle;
-        System.out.println("ENGINE " + this.id + " THR: " + throttle);
+//        System.out.println("ENGINE " + this.id + " THR: " + throttle);
         
         double newThrottle = this.throttleMin + //this is where we start adding on top of
                 (
@@ -193,6 +195,8 @@ public class Engine implements Runnable {
         this.write(this.throttleMin);
         
         this.throttle = 0;
+        
+        this.setRunning(false);
     }
     
     /**
@@ -204,6 +208,8 @@ public class Engine implements Runnable {
         
         //bypass the setThrottle method
         this.throttle = -1;
+        
+        this.setRunning(false);
     }
     
     /**
@@ -211,7 +217,7 @@ public class Engine implements Runnable {
      */
     private void write(double speed) {
         String content = this.gpio + "=" + speed + "\n";
-        System.out.print("ENGINE " + this.id + " WRITE: " + content);
+//        System.out.print("ENGINE " + this.id + " WRITE: " + content);
         
         try {
             FileOutputStream fop = null;
@@ -290,11 +296,20 @@ public class Engine implements Runnable {
         public void run() {
             engine.write(engine.getThrottleMin());
             System.out.println("ENGINE " + this.engine.id + " Startup procedures done for " + this.engine.id);
+            
+            engine.setRunning(true);
         }
         
         public void setEngine(Engine e) {
             this.engine = e;
         }
     }
-    
+
+    public boolean isRunning() {
+        return running;
+    }
+
+    public void setRunning(boolean isRunning) {
+        this.running = isRunning;
+    }
 }
