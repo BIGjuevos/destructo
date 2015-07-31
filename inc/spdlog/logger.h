@@ -54,7 +54,7 @@ public:
 
     virtual ~logger();
     logger(const logger&) = delete;
-    logger& operator=(const logger&) = delete;
+    logger& operator=(const logger&) = default;
 
     void set_level(level::level_enum);
     level::level_enum level() const;
