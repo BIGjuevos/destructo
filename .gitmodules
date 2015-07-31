@@ -1,3 +1,6 @@
 [submodule "inc/i2cdevlib"]
 	path = inc/i2cdevlib
 	url = https://github.com/jrowberg/i2cdevlib.git
+[submodule "inc/inih"]
+	path = inc/inih
+	url = https://github.com/benhoyt/inih.git

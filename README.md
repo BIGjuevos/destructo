@@ -8,3 +8,4 @@ Libraries used
 ==============
 https://github.com/jrowberg/i2cdevlib - for i2c stuff
 https://github.com/gabime/spdlog - for logging
+https://github.com/benhoyt/inih - for configuration

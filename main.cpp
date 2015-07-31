@@ -1,5 +1,8 @@
 #include <iostream>
 #include <thread>
+
+#include "inc/Databus.h"
+
 #include "inc/spdlog/spdlog.h"
 
 using namespace std;
@@ -15,7 +18,7 @@ int main() {
 
     Databus databus;
 
-    std::thread databus(&Databus::)
+//    std::thread databus(&Databus::)
 
     return 0;
 }

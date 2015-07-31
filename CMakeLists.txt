@@ -4,4 +4,4 @@ project(destructo)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 set(SOURCE_FILES main.cpp)
-add_executable(destructo ${SOURCE_FILES} src/Accelerometer.cpp inc/Accelerometer.h)
+add_executable(destructo ${SOURCE_FILES} src/Accelerometer.cpp inc/Accelerometer.h src/Databus.cpp inc/Databus.h)
