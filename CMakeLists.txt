@@ -23,4 +23,4 @@ set(ACCEL_FILES ${ACCEL_ADXL345})
 ####################
 set(SOURCE_FILES main.cpp)
 
-add_executable(destructo ${SOURCE_FILES} ${INI_FILES} ${ACCEL_FILES} ${ACCEL_CORE} src/Databus.cpp inc/Databus.h src/Config.cpp inc/Config.h)
+add_executable(destructo ${SOURCE_FILES} ${INI_FILES} ${ACCEL_FILES} src/Databus.cpp inc/Databus.h src/Config.cpp inc/Config.h)
